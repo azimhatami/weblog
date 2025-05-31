@@ -3,10 +3,12 @@ const { Router } = require('express');
 const router = new Router();
 
 
+// @desc Weblog Landing Page
+// @route GET /
 router.get('/', (req, res) => {
   res.render('index', {
     pageTitle: 'Weblog',
-    layout: './layouts/loginLayout'
+    path: '/'
   });
 });
 

@@ -6,7 +6,8 @@ const dotEnv = require('dotenv');
 const morgan = require('morgan');
 
 const connectDB = require('./config/db');
-const indexRoutes = require('./routes');
+const blogRoutes = require('./routes/blog');
+const dashRoutes = require('./routes/dashboard');
 
 
 // Load Config
@@ -32,7 +33,8 @@ app.set('views', 'views');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.use(indexRoutes);
+app.use('/dashboard', dashRoutes);
+app.use(blogRoutes);
 
 const PORT = process.env.PORT || 5000
 
