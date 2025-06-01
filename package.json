@@ -16,9 +16,9 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-ejs-layouts": "^2.5.1",
+    "fastest-validator": "^1.19.1",
     "mongoose": "^8.15.1",
-    "nodemon": "^3.1.10",
-    "yup": "^1.6.1"
+    "nodemon": "^3.1.10"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
