@@ -1,9 +1,10 @@
-const { Schema } = require('mongoose');
+const { Schema, model } = require('mongoose');
+const Yup = require('yup');
 
-const UserSchema = new Schema({
+const userSchema = new Schema({
   fullname: {
     type: String,
-    required: true,
+    required: [ true, 'نام و نام خانوادگی الزامی می باشد'],
     trim: true
   },
   email: {
@@ -23,6 +24,27 @@ const UserSchema = new Schema({
   }
 });
 
-const User = model('User', UserSchema);
+const schema = Yup.object().shape({
+  fullname: Yup.string()
+    .required('نام و نام خانوادگی الزامی می باشد')
+    .min(4, 'نام و نام خانوادگی نباید کمتر از ۴ کاراکتر باشد')
+    .max(255, 'نام و نام خانوادگی نباید بیشتر از۲۵۵ کاراکتر باشد'),
+  email: Yup.string()
+    .email('ایمیل معتبر نمی باشد')
+    .required('ایمیل الزامی می باشد'),
+  password: Yup.string()
+    .min(4, 'کلمه عبور نباید کمتر از ۴ کاراکتر باشد')
+    .max(255, 'کلمه عبور نباید بیشتر از ۲۵۵ کاراکتر باشد')
+    .required('کلمه عبور الزامی است'),
+  confirmPassword: Yup.string()
+    .required('تکرار کلمه عبور الزامی می باشد')
+    .oneOf([Yup.ref('password'), null]),
+});
+
+userSchema.statics.userValidation = function(body) {
+  return schema.validate(body, {abortEarly: false})
+}
+
+const User = model('User', userSchema);
 
 module.exports = User;
