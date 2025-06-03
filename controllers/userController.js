@@ -20,6 +20,17 @@ exports.handleLogin = (req, res, next) => {
   })(req, res, next);
 };
 
+
+exports.logout = (req, res, next) => {
+  req.logout(function(err) {
+    if (err) throw err;
+
+    req.flash('success_msg', 'خروج موفقیت‌آمیز بود');
+    res.redirect('/users/login');
+  });
+};
+
+
 exports.register = (req, res) => {
   res.render('register', {
     pageTitle: 'ثبت نام کاربر جدید',
