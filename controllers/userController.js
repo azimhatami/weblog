@@ -15,13 +15,26 @@ exports.register = (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
+  const errors = [];
   try {
     await User.userValidation(req.body);
-    // await User.create(req.body);
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (user) {
+      errors.push({
+        message: 'کاربری با این ایمیل موجود است'
+      });
+      return res.render('register', {
+        pageTitle: 'ثبت نام کاربر',
+        path: '/register',
+        errors,
+      })
+    };
+
+    await User.create(req.body);
     res.redirect('/users/login');
   } catch (err) {
     console.log(err);
-    const errors = [];
     err.inner.forEach(e => {
       errors.push({
         name: e.path,
