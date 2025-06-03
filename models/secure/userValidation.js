@@ -15,6 +15,6 @@ exports.schema = Yup.object().shape({
     .required('کلمه عبور الزامی است'),
   confirmPassword: Yup.string()
     .required('تکرار کلمه عبور الزامی می باشد')
-    .oneOf([Yup.ref('password'), null]),
+    .oneOf([Yup.ref('password'), null], "کلمه های عبور یکسان نیستند"),
 });
 

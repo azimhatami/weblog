@@ -5,7 +5,8 @@ const User = require('../models/User');
 exports.login = (req, res) => {
   res.render('login', {
     pageTitle: 'ورود به بخش مدیریت',
-    path: '/login'
+    path: '/login',
+    message: req.flash('success_msg'),
   });
 };
 
@@ -39,6 +40,7 @@ exports.createUser = async (req, res) => {
       email,
       password: hash
     });
+    req.flash("success_msg", "ثبت نام موفقیت امیز بود");
     res.redirect('/users/login');
 
 //    bcrypt.genSalt(10, (err, salt) => {
