@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const User = require('../models/User');
 
 exports.login = (req, res) => {
@@ -18,7 +20,7 @@ exports.createUser = async (req, res) => {
   const errors = [];
   try {
     await User.userValidation(req.body);
-    const { email } = req.body;
+    const { fullname, email, password } = req.body;
     const user = await User.findOne({ email });
     if (user) {
       errors.push({
@@ -31,11 +33,30 @@ exports.createUser = async (req, res) => {
       })
     };
 
-    await User.create(req.body);
+    const hash = await bcrypt.hash(password, 10);
+    await User.create({
+      fullname,
+      email,
+      password: hash
+    });
     res.redirect('/users/login');
+
+//    bcrypt.genSalt(10, (err, salt) => {
+//      if (err) throw err;
+//      bcrypt.hash(password, salt, async (err, hash) => {
+//        if (err) throw err;
+//        await User.create({
+//          fullname,
+//          email,
+//          password: hash,
+//        });
+//        res.redirect('/users/login');
+//      })
+//    })
+
   } catch (err) {
     console.log(err);
-    err.inner.forEach(e => {
+    err.inner.forEach((e) => {
       errors.push({
         name: e.path,
         message: e.message
