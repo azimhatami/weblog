@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production node app",
-    "dev": "cross-env NODE_ENV=development nodemon app"
+    "dev": "cross-env NODE_ENV=development DEBUG=weblog-project nodemon app"
   },
   "keywords": [],
   "author": "Azim Hatami",
@@ -15,6 +15,7 @@
     "bcryptjs": "^3.0.2",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^5.1.0",
+    "debug": "^4.4.1",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",

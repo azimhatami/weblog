@@ -1,5 +1,6 @@
 const path = require('path');
 
+const debug = require('debug')('weblog-project')
 const express = require('express');
 const mongoose = require('mongoose');
 const expressLayout = require('express-ejs-layouts');
@@ -18,6 +19,7 @@ dotEnv.config({ path: './config/config.env' })
 
 // Database connection
 connectDB();
+debug('Connected to database');
 
 // Passport Configuration
 require('./config/passport');
@@ -26,6 +28,7 @@ const app = express();
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
+  debug('Morgan Enabled');
   app.use(morgan('dev'));
 }
 
