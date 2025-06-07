@@ -51,6 +51,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  unset: "destroy",
   store: MongoStore.create({mongoUrl: process.env.DB_URI})
 }));
 

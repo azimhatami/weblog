@@ -71,8 +71,8 @@ exports.rememberMe = (req, res) => {
 exports.logout = (req, res, next) => {
   req.logout(function(err) {
     if (err) throw err;
-
-    req.flash('success_msg', 'خروج موفقیت‌آمیز بود');
+    req.session = null;
+    // req.flash('success_msg', 'خروج موفقیت‌آمیز بود');
     res.redirect('/users/login');
   });
 };

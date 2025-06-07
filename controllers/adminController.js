@@ -29,11 +29,27 @@ exports.getAddPost = (req, res) => {
 };
 
 exports.createPost = async (req, res) => {
+  const errorArr = [];
+
   try {
+    await Blog.postValidation(req.body);
     await Blog.create({ ...req.body, user: req.user.id });
     res.redirect('/dashboard');
   } catch (err) {
-    console.log(err);
-    get500(req, res);
+    console.log(err.inner);
+    err.inner.forEach((e) => {
+      errorArr.push({
+        name: e.path,
+        message: e.message
+      })
+    })
+
+    return res.render('private/addPost', {
+      pageTitle: 'بخش مدیریت | ساخت پست جدید',
+      path: '/dashboard/add-post',
+      layout: './layouts/dashLayout',
+      fullname: req.user.fullname,
+      errors: errorArr,
+    });
   }
 };
