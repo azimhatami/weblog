@@ -16,8 +16,8 @@ const blogSchema = new Schema({
   },
   status: {
     type: String,
-    default: 'عمومی', // private
-    enum: ['عمومی', 'خصوصی'],
+    default: 'public',
+    enum: ['private', 'public'],
   },
   user: {
     type: Schema.Types.ObjectId,

@@ -8,6 +8,6 @@ exports.schema = Yup.object().shape({
     .max(100, 'عنوان پست نباید بیشتر از ۱۰۰ کاراکتر باشد'),
   body: Yup.string()
     .required('پست جدید باید دارای محتوا باشد'),
-  status: Yup.mixed().oneOf(['عمومی', 'خصوصی'], 'یکی از ۲ وضعیت خصوصی یا عمومی را انتخاب کنید'),
+  status: Yup.mixed().oneOf(['private', 'public'], 'یکی از ۲ وضعیت خصوصی یا عمومی را انتخاب کنید'),
 });
 
