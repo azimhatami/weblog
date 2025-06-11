@@ -11,6 +11,7 @@ document.getElementById("imageUpload").onclick = function() {
     if (xhttp.status === 200) {
       imageStatus.innerHTML = "آپلود عکس موفقیت امیز بود";
       uploadResult.innerHTML = this.responseText;
+      selectedImage.value = ""; // Input file clear
     } else {
       imageStatus.innerHTML = this.responseText;
     }
