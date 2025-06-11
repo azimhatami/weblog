@@ -1,6 +1,6 @@
 const multer = require('multer');
 const sharp = require('sharp');
-const uuid = require('uuid').v4;
+const shortId = require('shortid');
 
 const Blog = require('../models/Blog');
 const { formatDate } = require('../utils/jalali');
@@ -70,15 +70,18 @@ exports.uploadImage = (req, res) => {
 
   upload(req, res, async (err) => {
     if (err) {
-      res.send(err);
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).send("حجم عکس زیاده!!!");
+      }
+      res.status(400).send(err);
     } else {
       if (req.file) {
         // console.log(req.file);
-        const fileName = `${uuid()}_${req.file.originalname}`;
+        const fileName = `${shortId.generate()}_${req.file.originalname}`;
         await sharp(req.file.buffer).jpeg({
           quality: 60
         }).toFile(`./public/uploads/${fileName}`).catch(err => console.log(err))
-        res.status(200).send("آپلود عکس با موفقیت انجام شد");
+        res.status(200).send(`http://localhost:3000/uploads/${fileName}`);
       } else {
         res.send('جهت آپلود عکسی انتخاب کنید');
       }
