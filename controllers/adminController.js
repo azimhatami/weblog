@@ -98,6 +98,17 @@ exports.editPost = async (req, res) => {
   }
 };
 
+exports.deletePost = async (req, res) => {
+  try {
+    const result = await Blog.findByIdAndDelete(req.params.id);
+    console.log(result);
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.log(err);
+    res.render('errors/500');
+  }
+};
+
 exports.createPost = async (req, res) => {
   const errorArr = [];
 
@@ -125,7 +136,6 @@ exports.createPost = async (req, res) => {
 };
 
 exports.uploadImage = (req, res) => {
-  
   const upload = multer({
     limits: {fileSize: 4000000},
     // dest: "uploads/",

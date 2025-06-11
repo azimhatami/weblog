@@ -18,6 +18,10 @@ router.get('/add-post', authenticated, adminController.getAddPost);
 // @route GET /dashboard/edit-post/:id
 router.get('/edit-post/:id', authenticated, adminController.getEditPost);
 
+// @desc Dashboard Delete Post
+// @route GET /dashboard/delete-post/:id
+router.get('/delete-post/:id', authenticated, adminController.deletePost);
+
 // @desc Dashboard Handle Post Creation
 // @route POST /dashboard/add-post
 router.post('/add-post', authenticated, adminController.createPost);
