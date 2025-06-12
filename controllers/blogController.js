@@ -19,3 +19,21 @@ exports.getIndex = async (req, res) => {
     res.render('errors/500');
   }
 };
+
+exports.getSinglePost = async (req, res) => {
+  try {
+    const post = await Blog.findOne({ _id: req.params.id }).populate("user");
+
+    if (!post) return res.redirect('errors/404'); 
+
+    res.render('post', {
+      pageTitle: post.title,
+      path: '/post',
+      post,
+      formatDate
+    });
+  } catch (err) {
+    console.log(err);
+    res.render('errors/500');
+  }
+};
