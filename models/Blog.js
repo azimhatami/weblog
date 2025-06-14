@@ -19,6 +19,10 @@ const blogSchema = new Schema({
     default: 'public',
     enum: ['private', 'public'],
   },
+  thumbnail: {
+    type: String,
+    rquired: true
+  },
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User'
