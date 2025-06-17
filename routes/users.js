@@ -23,6 +23,22 @@ router.get('/logout', authenticated, userController.logout);
 // @route GET /users/register
 router.get('/register', userController.register);
 
+// @desc Forget Password Page
+// @route GET /users/forget-password
+router.get('/forget-password', userController.forgetPassword);
+
+// @desc Reset Password Page
+// @route GET /users/reset-password/:token
+router.get('/reset-password/:token', userController.resetPassword);
+
+// @desc Handle Forget Password
+// @route POST /users/forget-password
+router.post('/forget-password', userController.handleForgetPassword);
+
+// @desc Handle Reset Password
+// @route POST /users/reset-password/:id
+router.post('/reset-password/:id', userController.handleResetPassword);
+
 // @desc Register Handle
 // @route POST /users/register
 router.post('/register', userController.createUser);

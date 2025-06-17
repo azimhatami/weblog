@@ -25,6 +25,7 @@
     "express-fileupload": "^1.5.1",
     "express-session": "^1.18.1",
     "jalali-moment": "^3.3.11",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "multer": "^2.0.1",
     "node-fetch": "^2.6.1",
