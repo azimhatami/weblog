@@ -3,6 +3,7 @@ const passport = require('passport');
 const fetch = require('node-fetch');
 
 const User = require('../models/User');
+const { sendEmail } = require('../utils/mailer');
 
 exports.login = (req, res) => {
   res.render('login', {
@@ -113,6 +114,11 @@ exports.createUser = async (req, res) => {
       email,
       password
     });
+
+
+    // Send Welcome Email
+    sendEmail(email, fullname, 'خوش امدید به وبلاگ ما', 'خیلی خوشحالیم که به جمع ما پیوستید')
+
     req.flash("success_msg", "ثبت نام موفقیت امیز بود");
     res.redirect('/users/login');
 
