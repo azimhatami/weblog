@@ -11,6 +11,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 
 const connectDB = require('./config/db');
+const { errorHandler } = require('./middlewares/errors');
 
 
 // Load Config
@@ -54,6 +55,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/blog'));
 app.use('/users', require('./routes/users'));
 app.use('/dashboard', require('./routes/dashboard'));
+
+// Error Controller
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000
 

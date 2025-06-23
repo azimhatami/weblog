@@ -4,43 +4,45 @@ const Blog = require('../models/Blog');
 const { sendEmail } = require('../utils/mailer');
 
 
-exports.getIndex = async (req, res) => {
+exports.getIndex = async (req, res, next) => {
   try {
     const numberOfPosts = await Blog.find({ status: 'public' }).countDocuments();
     const posts = await Blog.find({ status: 'public' }).sort({ createdAt: 'desc' })
+
+    if (!posts) {
+      const error = new Error('There are no posts recorded in the database');
+      error.statusCode = 404;
+      throw error;
+    }
 
     res.status(200).json({
       posts,
       total: numberOfPosts,
     });
   } catch (err) {
-    console.log(err);
-    res.status(400).json({
-      error: err
-    });
+    next(err);
   }
 };
 
-exports.getSinglePost = async (req, res) => {
+exports.getSinglePost = async (req, res, next) => {
   try {
     const post = await Blog.findOne({ _id: req.params.id }).populate("user");
 
-    if (!post) return res.status(404).json({
-      message: 'Not Found'
-    }); 
+    if (!post) {
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     res.status(200).json({
       post
     });
   } catch (err) {
-    console.log(err);
-    res.status(400).json({
-      error: err
-    });
+    next(err);
   }
 };
 
-exports.handleContactPage = async (req, res) => {
+exports.handleContactPage = async (req, res, next) => {
   let errorArr = [];
 
   const {fullname, email, message} = req.body;
@@ -78,8 +80,10 @@ exports.handleContactPage = async (req, res) => {
       })
     });
 
-    res.status(422).json({
-      error: errorArr
-    });
+    const error = new Error('Validation error');
+    error.statusCode = 422;
+    error.data = errorArr;
+
+    next(error);
   }
 };
