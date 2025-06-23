@@ -12,6 +12,7 @@ const MongoStore = require('connect-mongo');
 
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middlewares/errors');
+const { setHeaders } = require('./middlewares/headers');
 
 
 // Load Config
@@ -28,6 +29,7 @@ const app = express();
 // BodyParser
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json());
+app.use(setHeaders);
 
 // File Upload Middleware
 app.use(fileUpload());
