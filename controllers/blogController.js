@@ -5,31 +5,19 @@ const { sendEmail } = require('../utils/mailer');
 
 
 exports.getIndex = async (req, res) => {
-  const page = +req.query.page || 1;
-  const postPerPage = 2;
-
   try {
     const numberOfPosts = await Blog.find({ status: 'public' }).countDocuments();
     const posts = await Blog.find({ status: 'public' }).sort({ createdAt: 'desc' })
-      .skip((page - 1) * postPerPage)
-      .limit(postPerPage)
 
-    res.render('index', {
-      pageTitle: 'وبلاگ',
-      path: '/',
+    res.status(200).json({
       posts,
-      formatDate,
-      truncate,
-      currentPage: page,
-      nextPage: page + 1,
-      previousPage: page - 1,
-      hasNextPage: postPerPage * page < numberOfPosts,
-      hasPreviousPage: page > 1,
-      lastPage: Math.ceil(numberOfPosts / postPerPage),
-    })
+      total: numberOfPosts,
+    });
   } catch (err) {
     console.log(err);
-    get500(req, res);
+    res.status(400).json({
+      error: err
+    });
   }
 };
 
@@ -37,32 +25,33 @@ exports.getSinglePost = async (req, res) => {
   try {
     const post = await Blog.findOne({ _id: req.params.id }).populate("user");
 
-    if (!post) return res.redirect('/404'); 
+    if (!post) return res.status(404).json({
+      message: 'Not Found'
+    }); 
 
-    res.render('post', {
-      pageTitle: post.title,
-      path: '/post',
-      post,
-      formatDate
+    res.status(200).json({
+      post
     });
   } catch (err) {
     console.log(err);
-    get500(req, res);
+    res.status(400).json({
+      error: err
+    });
   }
 };
 
 exports.handleContactPage = async (req, res) => {
-  const errorArr = [];
+  let errorArr = [];
 
   const {fullname, email, message} = req.body;
 
   const schema = Yup.object().shape({
     fullname: Yup.string()
-      .required('نام و نام خانوادگی الزامی می باشد'),
-    email: Yup.string().email('آدرس ایمیل صحیح نیست')
-      .required('آدرس ایمیل الزامی می باشد'),
+      .required('Full name is required'),
+    email: Yup.string().email('Invalid email address')
+      .required('Email is required'),
     message: Yup.string()
-      .required('پیام اصلی الزامی می باشد'),
+      .required('Message is required'),
   });
 
   try {
@@ -77,14 +66,9 @@ exports.handleContactPage = async (req, res) => {
       `${message} <br/> ایمیل کاربر: ${email}`
     );
 
-    req.flash('success_msg', 'پیام شما با موفقیت ارسال شد');
-
-    res.render('contact', {
-      pageTitle: 'تماس با ما',
-      path: '/contact',
-      message: req.flash('error'),
-      errors: errorArr,
-    })
+    res.status(200).json({
+      message: 'Your message has been sent successfully'
+    });
     
   } catch (err) {
     err.inner.forEach((e) => {
@@ -92,13 +76,10 @@ exports.handleContactPage = async (req, res) => {
         name: e.path,
         message: e.message
       })
-    })
+    });
 
-    res.render('contact', {
-      pageTitle: 'تماس با ما',
-      path: '/contact',
-      message: req.flash('error'),
-      errors: errorArr,
-    })
+    res.status(422).json({
+      error: errorArr
+    });
   }
 };
