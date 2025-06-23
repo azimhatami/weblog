@@ -1,63 +1,16 @@
 const bcrypt = require('bcryptjs');
 const passport = require('passport'); 
-const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
 const { sendEmail } = require('../utils/mailer');
 
-exports.login = (req, res) => {
-  res.render('login', {
-    pageTitle: 'ورود به بخش مدیریت',
-    path: '/login',
-    message: req.flash('success_msg'),
-    error: req.flash('error')
-  });
-};
 
 exports.handleLogin = async (req, res, next) => {
-  const token = req.body['cf-turnstile-response'];
-
-  if (!token) {
-    req.flash('error', 'اعتبار سنجی captcha الزامی می باشد')
-    return res.redirect('/users/login');
-  }
-
-  const secretKey = process.env.CAPTCHA_SECRET;
-  const verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-
-  try {
-    const response = await fetch(verifyUrl, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        secret: secretKey,
-        response: token,
-        remoteip: req.ip
-      })
-    });
-
-    const json = await response.json();
-
-    if (json.success) {
-      passport.authenticate('local', {
-        // successRedirect: '/dashboard',
-        failureRedirect: '/users/login',
-        failureFlash: true
-      })(req, res, next);
-    } else {
-      req.flash('error', 'مشکلی در اعتبار سنجی captcha هست');
-      res.redirect('/users/login');
-    }
-  } catch (error) {
-    console.log(error);
-    req.flash('error', 'خطای سرور در بررسی captcha');
-    return res.redirect('/users/login');
-  }
-
+  passport.authenticate('local', {
+    failureRedirect: '/users/login',
+    failureFlash: true
+  })(req, res, next);
 };
 
 exports.rememberMe = (req, res) => {
@@ -76,14 +29,6 @@ exports.logout = (req, res, next) => {
     req.session = null;
     // req.flash('success_msg', 'خروج موفقیت‌آمیز بود');
     res.redirect('/users/login');
-  });
-};
-
-
-exports.register = (req, res) => {
-  res.render('register', {
-    pageTitle: 'ثبت نام کاربر جدید',
-    path: '/register'
   });
 };
 
@@ -137,7 +82,6 @@ exports.createUser = async (req, res) => {
 //    })
 
   } catch (err) {
-    console.log(err);
     err.inner.forEach((e) => {
       errors.push({
         name: e.path,
@@ -151,15 +95,6 @@ exports.createUser = async (req, res) => {
       errors,
     })
   }
-};
-
-exports.forgetPassword = async (req, res) => {
-  res.render('forgetPass', {
-    pageTitle: 'فراموشی رمز عبور',
-    path: '/login',
-    message: req.flash('success_msg'),
-    error: req.flash('error'),
-  })
 };
 
 exports.handleForgetPassword = async (req, res) => {
@@ -204,9 +139,7 @@ exports.resetPassword = async (req, res) => {
 
   try {
     decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decodedToken);
   } catch (err) {
-    console.log(err);
     if (!decodedToken) {
       return res.redirect('/404');
     }

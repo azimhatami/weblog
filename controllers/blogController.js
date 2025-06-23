@@ -1,6 +1,7 @@
+const Yup = require('yup');
+
 const Blog = require('../models/Blog');
-const { formatDate } = require('../utils/jalali');
-const { truncate } = require('../utils/helpers');
+const { sendEmail } = require('../utils/mailer');
 
 
 exports.getIndex = async (req, res) => {
@@ -28,7 +29,7 @@ exports.getIndex = async (req, res) => {
     })
   } catch (err) {
     console.log(err);
-    res.render('errors/500');
+    get500(req, res);
   }
 };
 
@@ -36,7 +37,7 @@ exports.getSinglePost = async (req, res) => {
   try {
     const post = await Blog.findOne({ _id: req.params.id }).populate("user");
 
-    if (!post) return res.redirect('errors/404'); 
+    if (!post) return res.redirect('/404'); 
 
     res.render('post', {
       pageTitle: post.title,
@@ -46,6 +47,58 @@ exports.getSinglePost = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.render('errors/500');
+    get500(req, res);
+  }
+};
+
+exports.handleContactPage = async (req, res) => {
+  const errorArr = [];
+
+  const {fullname, email, message} = req.body;
+
+  const schema = Yup.object().shape({
+    fullname: Yup.string()
+      .required('نام و نام خانوادگی الزامی می باشد'),
+    email: Yup.string().email('آدرس ایمیل صحیح نیست')
+      .required('آدرس ایمیل الزامی می باشد'),
+    message: Yup.string()
+      .required('پیام اصلی الزامی می باشد'),
+  });
+
+  try {
+    await schema.validate(req.body, {abortEarly: false});
+
+    // TODO Captcha Validation
+
+    sendEmail(
+      email, 
+      fullname, 
+      'پیام از طرف وبلاگ', 
+      `${message} <br/> ایمیل کاربر: ${email}`
+    );
+
+    req.flash('success_msg', 'پیام شما با موفقیت ارسال شد');
+
+    res.render('contact', {
+      pageTitle: 'تماس با ما',
+      path: '/contact',
+      message: req.flash('error'),
+      errors: errorArr,
+    })
+    
+  } catch (err) {
+    err.inner.forEach((e) => {
+      errorArr.push({
+        name: e.path,
+        message: e.message
+      })
+    })
+
+    res.render('contact', {
+      pageTitle: 'تماس با ما',
+      path: '/contact',
+      message: req.flash('error'),
+      errors: errorArr,
+    })
   }
 };

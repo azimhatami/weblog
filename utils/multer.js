@@ -1,5 +1,4 @@
 const multer = require('multer');
-const uuid = require('uuid').v4;
 
 // let fileName = `${uuid()}.jpg`;
 exports.storage = multer.diskStorage({

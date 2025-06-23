@@ -13,5 +13,9 @@ router.get('/', blogController.getIndex);
 // @route GET /post/:id
 router.get('/post/:id', blogController.getSinglePost);
 
+// @desc Handle Contact Page
+// @route POST /contact
+router.post('/contact', blogController.handleContactPage);
+
 
 module.exports = router;
