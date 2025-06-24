@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const passport = require('passport'); 
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/User');
@@ -7,29 +6,39 @@ const { sendEmail } = require('../utils/mailer');
 
 
 exports.handleLogin = async (req, res, next) => {
-  passport.authenticate('local', {
-    failureRedirect: '/users/login',
-    failureFlash: true
-  })(req, res, next);
-};
+  const { email, password } = req.body;
 
-exports.rememberMe = (req, res) => {
-  if (req.body.remember) {
-    req.session.cookie.originalMaxAge = 24 * 60 * 60 * 1000 // 1 day
-  } else {
-    req.session.cookie.expire = null;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const isEqual = await bcrypt.compare(password, user.password);
+
+    if (isEqual) {
+      const token = jwt.sign({ 
+        user: {
+          userId: user._id.toString(),
+          email: user.email,
+          fullname: user.fullname
+        } 
+      },
+      process.env.JWT_SECRET,
+      );
+
+      res.status(200).json({ token, userId: user._id.toString() });
+    } else {
+      const error = new Error('Invalid credentials');
+      error.statusCode = 422;
+      throw error;
+    }
+  } catch (err) {
+    next(err);
   }
-
-  res.redirect('/dashboard');
-};
-
-exports.logout = (req, res, next) => {
-  req.logout(function(err) {
-    if (err) throw err;
-    req.session = null;
-    // req.flash('success_msg', 'خروج موفقیت‌آمیز بود');
-    res.redirect('/users/login');
-  });
 };
 
 exports.createUser = async (req, res) => {

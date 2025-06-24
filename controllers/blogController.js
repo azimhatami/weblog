@@ -43,8 +43,6 @@ exports.getSinglePost = async (req, res, next) => {
 };
 
 exports.handleContactPage = async (req, res, next) => {
-  let errorArr = [];
-
   const {fullname, email, message} = req.body;
 
   const schema = Yup.object().shape({
@@ -73,17 +71,6 @@ exports.handleContactPage = async (req, res, next) => {
     });
     
   } catch (err) {
-    err.inner.forEach((e) => {
-      errorArr.push({
-        name: e.path,
-        message: e.message
-      })
-    });
-
-    const error = new Error('Validation error');
-    error.statusCode = 422;
-    error.data = errorArr;
-
-    next(error);
+    next(err);
   }
 };
