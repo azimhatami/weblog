@@ -41,22 +41,30 @@ exports.handleLogin = async (req, res, next) => {
   }
 };
 
-exports.createUser = async (req, res) => {
-  const errors = [];
+exports.createUser = async (req, res, next) => {
   try {
     await User.userValidation(req.body);
     const { fullname, email, password } = req.body;
     const user = await User.findOne({ email });
     if (user) {
-      errors.push({
-        message: 'کاربری با این ایمیل موجود است'
+      const error = new Error('User already exists');
+      error.statusCode = 422;
+      throw error;
+    } else {
+      await User.create({
+        fullname,
+        email,
+        password
       });
-      return res.render('register', {
-        pageTitle: 'ثبت نام کاربر',
-        path: '/register',
-        errors,
-      })
-    };
+
+
+      // Send Welcome Email
+      sendEmail(email, fullname, 'خوش امدید به وبلاگ ما', 'خیلی خوشحالیم که به جمع ما پیوستید')
+
+      res.status(201).json({
+        message: 'User created successfully'
+      });
+    }
 
     // const hash = await bcrypt.hash(password, 10);
     // await User.create({
@@ -64,45 +72,22 @@ exports.createUser = async (req, res) => {
     //   email,
     //   password: hash
     // });
-    await User.create({
-      fullname,
-      email,
-      password
-    });
 
-
-    // Send Welcome Email
-    sendEmail(email, fullname, 'خوش امدید به وبلاگ ما', 'خیلی خوشحالیم که به جمع ما پیوستید')
-
-    req.flash("success_msg", "ثبت نام موفقیت امیز بود");
-    res.redirect('/users/login');
-
-//    bcrypt.genSalt(10, (err, salt) => {
-//      if (err) throw err;
-//      bcrypt.hash(password, salt, async (err, hash) => {
-//        if (err) throw err;
-//        await User.create({
-//          fullname,
-//          email,
-//          password: hash,
-//        });
-//        res.redirect('/users/login');
-//      })
-//    })
+    // bcrypt.genSalt(10, (err, salt) => {
+    //   if (err) throw err;
+    //   bcrypt.hash(password, salt, async (err, hash) => {
+    //     if (err) throw err;
+    //     await User.create({
+    //       fullname,
+    //       email,
+    //       password: hash,
+    //     });
+    //     res.redirect('/users/login');
+    //   })
+    // })
 
   } catch (err) {
-    err.inner.forEach((e) => {
-      errors.push({
-        name: e.path,
-        message: e.message
-      })
-    })
-
-    return res.render('register', {
-      pageTitle: 'ثبت نام کاربر',
-      path: '/register',
-      errors,
-    })
+    next(err);
   }
 };
 
