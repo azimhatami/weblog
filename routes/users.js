@@ -11,17 +11,13 @@ const router = new Router();
 // @route POST /users/login
 router.post('/login', userController.handleLogin);
 
-// @desc Reset Password Page
-// @route GET /users/reset-password/:token
-router.get('/reset-password/:token', userController.resetPassword);
-
 // @desc Handle Forget Password
 // @route POST /users/forget-password
 router.post('/forget-password', userController.handleForgetPassword);
 
 // @desc Handle Reset Password
-// @route POST /users/reset-password/:id
-router.post('/reset-password/:id', userController.handleResetPassword);
+// @route POST /users/reset-password/:token
+router.post('/reset-password/:token', userController.handleResetPassword);
 
 // @desc Register Handle
 // @route POST /users/register
