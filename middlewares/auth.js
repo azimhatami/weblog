@@ -22,6 +22,7 @@ exports.authenticated = (req, res, next) => {
     req.user = decodedToken.user.userId;
     next();
   } catch (err) {
+    next(err);
   }
 
 };

@@ -92,9 +92,7 @@ exports.deletePost = async (req, res) => {
   }
 };
 
-exports.createPost = async (req, res) => {
-  const errorArr = [];
-
+exports.createPost = async (req, res, next) => {
   const thumbnail = req.files ? req.files.thumbnail : {};
   const fileName = `${shortId.generate()}_${thumbnail.name}`;
   const uploadPath = `${appRoot}/public/uploads/thumbnails/${fileName}`;
@@ -105,24 +103,14 @@ exports.createPost = async (req, res) => {
     await Blog.postValidation(req.body);
 
     await sharp(thumbnail.data).jpeg({quality: 60}).toFile(uploadPath).catch(err => console.log(err))
-    await Blog.create({ ...req.body, user: req.user.id, thumbnail: fileName });
-    res.redirect('/dashboard');
-  } catch (err) {
-    console.log(err.inner);
-    err.inner.forEach((e) => {
-      errorArr.push({
-        name: e.path,
-        message: e.message
-      })
-    })
+    await Blog.create({ ...req.body, user: req.userId, thumbnail: fileName });
 
-    return res.render('private/addPost', {
-      pageTitle: 'بخش مدیریت | ساخت پست جدید',
-      path: '/dashboard/add-post',
-      layout: './layouts/dashLayout',
-      fullname: req.user.fullname,
-      errors: errorArr,
+    res.status(201).json({
+      message: 'Post created successfully'
     });
+  } catch (err) {
+    console.log(err);
+    next(err);
   }
 };
 
