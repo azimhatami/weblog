@@ -20,8 +20,8 @@ connectDB();
 const app = express();
 
 // BodyParser
-app.use(bodyParser.urlencoded({extended: true}))
-app.use(bodyParser.json());
+app.use(express.urlencoded({extended: false}))
+app.use(express.json());
 app.use(setHeaders);
 
 // File Upload Middleware

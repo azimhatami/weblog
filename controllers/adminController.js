@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const multer = require('multer');
 const sharp = require('sharp');
@@ -72,76 +73,95 @@ exports.editPost = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   try {
-    await Blog.findByIdAndDelete(req.params.id);
+    const post = await Blog.findByIdAndDelete(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
     const filePath = `${appRoot}/public/uploads/thumbnails/${post.thumbnail}`;
+
     fs.unlink(filePath, (err) => {
-     if (err) {
-       const error = new Error('Error deleting post image');
-       error.statusCode = 400;
-       throw error;
-     } else {
-       res.status(200).json({
-         message: 'Post deleted successfully'
-       });
-     }
+      if (err) {
+        console.error('Error deleting post image:', err);
+        return res.status(400).json({ message: 'Error deleting post image' });
+        // یا: return next(err);
+      }
+
+      return res.status(200).json({
+        message: 'Post deleted successfully',
+      });
     });
-    
-    res.status(200).json({
-      message: 'Post deleted successfully'
-    });
-  } catch (err) {
-    next(err);
-  }
-};
 
-exports.createPost = async (req, res, next) => {
-  const thumbnail = req.files ? req.files.thumbnail : {};
-  const fileName = `${shortId.generate()}_${thumbnail.name}`;
-  const uploadPath = `${appRoot}/public/uploads/thumbnails/${fileName}`;
-
-  try {
-    req.body = {...req.body, thumbnail};
-    console.log(req.userId);
-
-    await Blog.postValidation(req.body);
-
-    await sharp(thumbnail.data).jpeg({quality: 60}).toFile(uploadPath).catch(err => console.log(err))
-    await Blog.create({ ...req.body, user: req.userId, thumbnail: fileName });
-
-    res.status(201).json({
-      message: 'Post created successfully'
-    });
   } catch (err) {
     console.log(err);
     next(err);
   }
 };
 
-exports.uploadImage = (req, res) => {
-  const upload = multer({
-    limits: {fileSize: 4000000},
-    // dest: "uploads/",
-    // storage: storage,
-    fileFilter: fileFilter
-  }).single("image");
 
-  upload(req, res, async (err) => {
-    if (err) {
-      if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).send("حجم عکس زیاده!!!");
-      }
-      res.status(400).send(err);
-    } else {
-      if (req.files) {
-        // console.log(req.file);
-        const fileName = `${shortId.generate()}_${req.files.image.name}`;
-        await sharp(req.files.image.data).jpeg({
-          quality: 60
-        }).toFile(`./public/uploads/${fileName}`).catch(err => console.log(err))
-        res.status(200).send(`http://localhost:3000/uploads/${fileName}`);
-      } else {
-        res.send('جهت آپلود عکسی انتخاب کنید');
-      }
+exports.createPost = async (req, res, next) => {
+    const thumbnail = req.files ? req.files.thumbnail : {};
+    const fileName = `${shortId.generate()}_${thumbnail.name}`;
+    const uploadPath = `${appRoot}/public/uploads/thumbnails/${fileName}`;
+
+    try {
+        req.body = { ...req.body, thumbnail };
+
+        await Blog.postValidation(req.body);
+
+        await sharp(thumbnail.data)
+            .jpeg({ quality: 60 })
+            .toFile(uploadPath)
+            .catch((err) => console.log(err));
+
+        await Blog.create({
+            ...req.body,
+            user: req.userId,
+            thumbnail: fileName,
+        });
+
+        res.status(201).json({ message: "پست جدید با موفقیت ساخته شد" });
+    } catch (err) {
+        next(err);
     }
-  })
+};
+
+exports.uploadImage = async (req, res) => {
+    const upload = multer({
+        limits: { fileSize: 4000000 },
+        fileFilter: fileFilter
+    }).single("image");
+
+    upload(req, res, async (err) => {
+        if (err) {
+            if (err.code === "LIMIT_FILE_SIZE") {
+                return res.status(422).json({
+                    error: "حجم عکس ارسالی نباید بیشتر از 4 مگابایت باشد"
+                });
+            }
+            return res.status(400).json({ error: err.message });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                error: "جهت آپلود باید عکسی انتخاب کنید"
+            });
+        }
+
+        try {
+            const fileName = `${shortId.generate()}_${req.file.originalname}`;
+            await sharp(req.file.buffer)
+                .jpeg({ quality: 60 })
+                .toFile(`./public/uploads/${fileName}`);
+            
+            res.status(200).json({
+                image: `http://localhost:3000/uploads/${fileName}`
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                error: "خطا در پردازش تصویر"
+            });
+        }
+    });
 };
