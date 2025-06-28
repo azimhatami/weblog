@@ -9,9 +9,7 @@ const Blog = require('../models/Blog');
 const { storage, fileFilter } = require('../utils/multer');
 
 
-exports.editPost = async (req, res) => {
-  const errorArr = [];
-
+exports.editPost = async (req, res, next) => {
   const thumbnail = req.files ? req.files.thumbnail : {};
   const fileName = `${shortId.generate()}_${thumbnail.name}`;
   const uploadPath = `${appRoot}/public/uploads/thumbnails/${fileName}`;
@@ -32,13 +30,16 @@ exports.editPost = async (req, res) => {
     }
 
     if (!post) {
-      return res.redirect('errors/404');
+      const error = new Error('Post not found');
+      error.statusCode = 404;
+      throw error;
     }
 
-    if (post.user.toString() != req.user._id) {
-      return res.redirect('/dashboard');
+    if (post.user.toString() != req.userId) {
+      const error = new Error('Edit permission denied');
+      error.statusCode = 401;
+      throw error;
     } else {
-
       if (thumbnail.name) {
         fs.unlink(`${appRoot}/public/uploads/thumbnails/${post.thumbnail}`, async (err) => {
           if (err) {
@@ -59,36 +60,37 @@ exports.editPost = async (req, res) => {
       post.thumbnail =  thumbnail.name ? fileName : post.thumbnail;
       
       await post.save();
-      return res.redirect('/dashboard');
+      
+      res.status(200).json({
+        message: 'Post edited successfully'
+      });
     }
   } catch (err) {
-    console.log(err.inner);
-    err.inner.forEach((e) => {
-      errorArr.push({
-        name: e.path,
-        message: e.message
-      })
-    })
-
-    return res.render('private/editPost', {
-      pageTitle: 'بخش مدیریت | ویرایش پست',
-      path: '/dashboard/edit-post',
-      layout: './layouts/dashLayout',
-      fullname: req.user.fullname,
-      errors: errorArr,
-      post,
-    });
+    next(err);
   }
 };
 
-exports.deletePost = async (req, res) => {
+exports.deletePost = async (req, res, next) => {
   try {
-    const result = await Blog.findByIdAndDelete(req.params.id);
-    console.log(result);
-    res.redirect('/dashboard');
+    await Blog.findByIdAndDelete(req.params.id);
+    const filePath = `${appRoot}/public/uploads/thumbnails/${post.thumbnail}`;
+    fs.unlink(filePath, (err) => {
+     if (err) {
+       const error = new Error('Error deleting post image');
+       error.statusCode = 400;
+       throw error;
+     } else {
+       res.status(200).json({
+         message: 'Post deleted successfully'
+       });
+     }
+    });
+    
+    res.status(200).json({
+      message: 'Post deleted successfully'
+    });
   } catch (err) {
-    console.log(err);
-    get500(req, res);
+    next(err);
   }
 };
 
@@ -99,6 +101,7 @@ exports.createPost = async (req, res, next) => {
 
   try {
     req.body = {...req.body, thumbnail};
+    console.log(req.userId);
 
     await Blog.postValidation(req.body);
 
