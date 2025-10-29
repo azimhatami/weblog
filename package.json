@@ -4,7 +4,10 @@
   "description": "Simple weblog with express and typescript",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node ./src/app.ts "
+    "dev": "tsx ./src/app.ts",
+    "generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "migrate": "tsx -r dotenv/config src/migrations/migrate.ts",
+    "studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "Azim Hatami",
@@ -26,6 +29,7 @@
     "cors": "latest",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }
 }
