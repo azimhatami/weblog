@@ -7,7 +7,12 @@ export const getPostsService = async (): Promise<Post[]> => {
   return allPosts;
 };
 
-export const getPostService = async (id: number): Promise<Post> => {
+export const getPostService = async (id: number): Promise<Post | undefined> => {
   const post = await db.select().from(posts).where(eq(posts.id, id));
   return post;
+};
+
+export const addPostService = async (body: NewPost): Promise<Post | undefined> => {
+  const newPost = await db.insert(posts).values(body).returning();
+  if (newPost) return newPost[0];
 };

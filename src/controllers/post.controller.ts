@@ -1,5 +1,5 @@
 import { type Request, type Response } from 'express';
-import { getPostsService, getPostService } from '../services/post.service';
+import { getPostsService, getPostService, addPostService } from '../services/post.service';
 
 export const getPosts = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -25,3 +25,13 @@ export const getPost = async (req: Request, res: Response): Promise<Response> =>
     return res.status(400).send(error);
   }
 };
+
+export const addPost = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { title, content } = req.body;
+    const post = await addPostService({ title, content });
+    return res.status(201).json(post);
+  } catch (error) {
+    return res.status(400).send(error);
+  }
+}
