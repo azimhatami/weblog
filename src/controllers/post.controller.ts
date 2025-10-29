@@ -1,5 +1,5 @@
 import { type Request, type Response } from 'express';
-import { getPostsService, getPostService, addPostService } from '../services/post.service';
+import { getPostsService, getPostService, addPostService, editPostService } from '../services/post.service';
 
 export const getPosts = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -35,3 +35,19 @@ export const addPost = async (req: Request, res: Response): Promise<Response> =>
     return res.status(400).send(error);
   }
 }
+
+export const editPost = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const post = await editPostService(id, { title, content });
+
+    if (!post) return res.status(404).json({
+      message: 'post does not exist',
+    });
+
+    return res.status(200).json(post);
+  } catch (error) {
+    return res.status(400).send(error);
+  }
+};
