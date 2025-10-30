@@ -1,5 +1,10 @@
 import { type Request, type Response } from 'express';
-import { getPostsService, getPostService, addPostService, editPostService } from '../services/post.service';
+import { 
+  getPostsService, 
+  getPostService, 
+  addPostService, 
+  editPostService,
+  deletePostService } from '../services/post.service';
 
 export const getPosts = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -47,6 +52,24 @@ export const editPost = async (req: Request, res: Response): Promise<Response> =
     });
 
     return res.status(200).json(post);
+  } catch (error) {
+    return res.status(400).send(error);
+  }
+};
+
+export const deletePost = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { id } = req.params;
+    const post = await deletePostService(id);
+
+    if (!post) return res.status(404).json({
+      message: 'post does not exist'
+    });
+
+    return res.status(200).json({
+      message: 'post deleted successfuly',
+      post
+    });
   } catch (error) {
     return res.status(400).send(error);
   }

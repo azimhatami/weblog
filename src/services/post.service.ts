@@ -21,3 +21,8 @@ export const editPostService = async (id: number, body: Post): Promise<Post | un
   const editPost = await db.update(posts).set(body).where(eq(posts.id, id)).returning();
   if (editPost) return editPost[0];
 };
+
+export const deletePostService = async (id: number): Promise<Post | undefined> => {
+  const deletedPost = await db.delete(posts).where(eq(posts.id, id)).returning({ id: posts.id });
+  if (deletedPost) return deletedPost[0].id;
+};
