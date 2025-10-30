@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 import { DBConnection } from './configs/db.config';
+import { setupSwagger } from './configs/swagger.config';
 import router from './routes/routers';
 
 const app: express.Application = express();
@@ -13,6 +14,9 @@ app.use(express.json());
 app.use(cors({ credentials: false }));
 
 DBConnection();
+
+// Swagger document
+setupSwagger(app);
 
 app.use('/api', router);
 
