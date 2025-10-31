@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { NodePgDatabase, drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from '../models/post.model';
+import * as schema from '../models/index';
 
 const pool = new Pool({
   port: 5432,
