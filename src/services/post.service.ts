@@ -12,12 +12,12 @@ export const getPostService = async (id: number): Promise<Post | undefined> => {
   return post;
 };
 
-export const addPostService = async (body: NewPost): Promise<Post | undefined> => {
+export const createPostService = async (body: NewPost): Promise<Post | undefined> => {
   const newPost = await db.insert(posts).values(body).returning();
   if (newPost) return newPost[0];
 };
 
-export const editPostService = async (id: number, body: Post): Promise<Post | undefined> => {
+export const updatePostService = async (id: number, body: Post): Promise<Post | undefined> => {
   const editPost = await db.update(posts).set(body).where(eq(posts.id, id)).returning();
   if (editPost) return editPost[0];
 };
