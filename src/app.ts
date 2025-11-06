@@ -4,6 +4,7 @@ import 'dotenv/config';
 
 import { DBConnection } from './configs/db.config';
 import { setupSwagger } from './configs/swagger.config';
+import { errorHandler } from './middlewares/error.middleware';
 import router from './routes/routers';
 
 const app: express.Application = express();
@@ -21,11 +22,8 @@ setupSwagger(app);
 app.use('/api', router);
 
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Hello world!'
-  });
-});
+// Error Handler
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Listening: http://localhost:${port}`);

@@ -1,9 +1,9 @@
-import { type Request, type Response } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 
 import { registerUserService, loginUserService } from '../services/auth.service';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { fullname, email, password } = req.body;
 
@@ -20,21 +20,11 @@ export const register = async (req: Request, res: Response) => {
     });
     
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === 'User already exists') {
-        return res.status(400).json({
-          message: error.message
-        });
-      }
-    }
-
-    res.status(500).json({
-      message: 'Server error'
-    });
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password }  = req.body;
 
@@ -46,16 +36,6 @@ export const login = async (req: Request, res: Response) => {
       token: result.token
     });
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message === 'Invalid credentials') {
-        return res.status(400).json({
-          message: error.message
-        });
-      }
-    }
-
-    res.status(500).json({
-      message: 'Server error'
-    });
+    next(error);
   }
 };
