@@ -6,7 +6,8 @@ enum ApiErrorCode {
   INVALID_CREDENTIALS = 'Invalid credentials',
   POST_NOT_FOUND = 'Post not found',
   USER_NOT_AUTHENTICATED = 'User not authenticated',
-  INTERNAL_SERVER_ERROR = 'Internal server error'
+  INTERNAL_SERVER_ERROR = 'Internal server error',
+  RATE_LIMITED = 'Too many requests, Please slow down'
 }
 
 interface ApiErrorDef {
@@ -40,6 +41,10 @@ export const ApiErrors = {
     status: 500,
     message: 'Internal server error',
   },
+  [ApiErrorCode.RATE_LIMITED]: {
+    status: 429,
+    message: 'Too many requests, Please slow down',
+  }
 } as const satisfies Record<ApiErrorCode, ApiErrorDef>;
 
 export const errorHandler = (

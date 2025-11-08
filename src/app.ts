@@ -19,6 +19,7 @@ DBConnection();
 // Swagger document
 setupSwagger(app);
 
+// Routes
 app.use('/api', router);
 
 
