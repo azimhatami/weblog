@@ -1,26 +1,18 @@
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
-import { users, type User, type NewUser } from '../models/user.model';
+import type { User, NewUser } from '../models/user.model';
+import { users } from '../models/user.model';
 import { db } from '../configs/db.config';
 import { generateToken } from '../utils/jwt';
+import type { CreateUserDTO, LoginUserDTO } from '../validation/user.validator';
 
-interface RegisterResponse {
+interface AuthResponse {
   user: User;
   token: string;
 };
 
-interface LoginResponse {
-  user: User;
-  token: string;
-};
-
-interface LoginData {
-  email: string;
-  password: string;
-}
-
-export const registerUserService = async (userData: NewUser): Promise<RegisterResponse> => {
+export const registerUserService = async (userData: CreateUserDTO): Promise<AuthResponse> => {
   const { fullname, email, password } = userData;
 
   const existUser = await db
@@ -60,7 +52,7 @@ export const registerUserService = async (userData: NewUser): Promise<RegisterRe
     };
 };
 
-export const loginUserService = async (userData: LoginData): Promise<LoginResponse> => {
+export const loginUserService = async (userData: LoginUserDTO): Promise<AuthResponse> => {
   const { email, password } = userData;
 
   const [user] = await db
