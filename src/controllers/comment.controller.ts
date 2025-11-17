@@ -1,9 +1,12 @@
-import { type Request, type Response, type NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+
 import { createCommentService, getPostCommentService, updateCommentService, deleteCommentService } from '../services/comment.service';
+import type { CreateCommentDTO, UpdateCommentDTO } from '../validation/comment.validator';
+import { validateCreateComment, validateUpdateComment } from '../validation/comment.validator';
 
 export const createComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { content, postId } = req.body;
+    const validateResult = validateCreateComment(req.body);
 
     if (!req.user) {
       return res.status(401).json({
@@ -11,9 +14,17 @@ export const createComment = async (req: Request, res: Response, next: NextFunct
       });
     }
 
-    const userId = req.user.userId;
+    if (!validateResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: validateResult.error.issues.map(issue => issue.message)
+      });
+    }
 
-    const comment = await createCommentService({ content, postId, userId });
+    const userId = req.user.userId;
+    const createCommentDTO: CreateCommentDTO = validateResult.data;
+    const comment = await createCommentService({ ...createCommentDTO, userId });
     return res.status(201).json(comment);
 
   } catch (error) {
@@ -25,7 +36,14 @@ export const getPostComments = async (req: Request, res: Response, next: NextFun
   try {
     const { postId } = req.params;
 
-    const comments = await getPostCommentService(Number(postId));
+    const postIdNum = Number(postId);
+    if (isNaN(postIdNum) || postIdNum <= 0) {
+      return res.status(400).json({
+        message: 'Invalid post ID'
+      });
+    }
+
+    const comments = await getPostCommentService(postIdNum);
 
     return res.status(200).json(comments);
   } catch (error) {
@@ -36,12 +54,29 @@ export const getPostComments = async (req: Request, res: Response, next: NextFun
 export const updateComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const { content } = req.body;
+    const validateResult = validateUpdateComment(req.body);
     const userId = req.user.userId;
 
+    const commentId = Number(id);
+    if (isNaN(commentId) || commentId <= 0) {
+      return res.status(400).json({
+        message: 'Invalid comment ID'
+      });
+    }
+
+    if (!validateResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: validateResult.error.issues.map(issue => issue.message)
+      });
+    }
+
+    const updateCommentDTO: UpdateCommentDTO = validateResult.data
+
     const updatedComment = await updateCommentService(
-      Number(id),
-      content,
+      commentId,
+      updateCommentDTO,
       userId
     );
 
@@ -51,7 +86,7 @@ export const updateComment = async (req: Request, res: Response, next: NextFunct
       });
     }
 
-    return res.status(200).json({ updatedComment });
+    return res.status(200).json(updatedComment);
   } catch (error) {
     next(error);
   }
@@ -65,9 +100,16 @@ export const deleteComment = async (req: Request, res: Response, next: NextFunct
       throw new Error('User not authenticated');
     }
 
-    const commentId = await deleteCommentService(Number(id));
+    const commentId = Number(id);
+    if (isNaN(commentId) || commentId <= 0) {
+      return res.status(400).json({
+        message: 'Invalid comment ID'
+      });
+    }
 
-    if (!commentId) {
+    const result = await deleteCommentService(commentId);
+
+    if (!result) {
       return res.status(404).json({
         message: 'Comment not found'
       });
@@ -75,7 +117,7 @@ export const deleteComment = async (req: Request, res: Response, next: NextFunct
 
     return res.status(200).json({
       message: 'Comment deleted successfuly',
-      commentId
+      result
     });
   } catch (error) {
     next(error);
