@@ -27,15 +27,15 @@ export const LoginUserSchema = z.object({
     .trim()
     .min(6, 'Password must be at least 6 characters')
     .max(28, 'Password must be at most 28 characters'),
-});
+}).strict('Unknown fields are not allowed');
 
 export type CreateUserDTO = z.infer<typeof CreateUserSchema>;
 export type LoginUserDTO = z.infer<typeof LoginUserSchema>;
 
 export const validateCreateUser = (data: unknown) => {
-  return CreateUserSchema.safeParse(data)
+  return CreateUserSchema.safeParse(data);
 };
 
 export const validateLoginUser = (data: unknown) => {
-  return LoginUserSchema.safeParse(data)
+  return LoginUserSchema.safeParse(data);
 };
