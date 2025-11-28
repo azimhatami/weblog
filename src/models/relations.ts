@@ -3,12 +3,17 @@ import { users } from './user.model';
 import { posts } from './post.model';
 import { comments } from './comment.model';
 import { likes } from './like.model';
+import { roles } from './role.model';
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   posts: many(posts),
   comments: many(comments),
-  like: many(likes),
+  likes: many(likes),
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  })
 }));
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
@@ -48,4 +53,8 @@ export const likesRelations = relations(likes, ({ one }) => ({
     fields: [likes.postId],
     references: [posts.id],
   })
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
 }));

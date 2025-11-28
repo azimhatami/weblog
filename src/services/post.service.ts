@@ -9,7 +9,7 @@ export const getPostsService = async (): Promise<Post[]> => {
 
 export const getPostService = async (id: number): Promise<Post | undefined> => {
   const post = await db.select().from(posts).where(eq(posts.id, id));
-  return post;
+  return post[0];
 };
 
 export const createPostService = async (body: NewPost): Promise<Post | undefined> => {
@@ -24,5 +24,5 @@ export const updatePostService = async (id: number, body: Post): Promise<Post | 
 
 export const deletePostService = async (id: number): Promise<Post | undefined> => {
   const deletedPost = await db.delete(posts).where(eq(posts.id, id)).returning({ id: posts.id });
-  if (deletedPost) return deletedPost[0].id;
+  if (deletedPost) return deletedPost[0];
 };

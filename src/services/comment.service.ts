@@ -27,6 +27,13 @@ export const getPostCommentService = async (postId: number): Promise<Comment[]> 
   return postComments;
 }
 
+export const getCommentByIdService = async (id: number): Promise<Comment | undefined> => {
+  return db.query.comments.findFirst({
+    where: (c, { eq }) => eq(c.id, id)
+  });
+};
+
+
 export const updateCommentService = async (commentId: number, content: string, userId: number): Promise<Comment | null> => {
   const updatedComment = await db
     .update(comments)

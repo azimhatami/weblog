@@ -38,12 +38,14 @@ export const registerUserService = async (userData: CreateUserDTO): Promise<Auth
       id: users.id,
       fullname: users.fullname,
       email: users.email,
-      createdAt: users.createdAt
+      createdAt: users.createdAt,
+      roleId: users.roleId
     });
 
     const token = generateToken({
       userId: user.id,
-      email: user.email
+      email: user.email,
+      roleId: user.roleId
     });
 
     return {
@@ -61,6 +63,7 @@ export const loginUserService = async (userData: LoginUserDTO): Promise<AuthResp
       fullname: users.fullname,
       email: users.email,
       password: users.password,
+      roleId: users.roleId,
       createdAt: users.createdAt
     })
     .from(users)
@@ -79,7 +82,8 @@ export const loginUserService = async (userData: LoginUserDTO): Promise<AuthResp
 
   const token = generateToken({
     userId: user.id,
-    email: user.email
+    email: user.email,
+    roleId: user.roleId
   });
 
   const { password: _, ...userWithoutPassword } = user;

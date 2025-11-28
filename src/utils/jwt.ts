@@ -5,6 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 export type JwtPayload = {
   userId: number;
   email: string;
+  roleId: number;
 };
 
 export const generateToken = (payload: JwtPayload) => {

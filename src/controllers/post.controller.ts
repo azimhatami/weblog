@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
+
 import { 
   getPostsService, 
   getPostService, 
   createPostService, 
   updatePostService,
   deletePostService } from '../services/post.service';
-  
 import type { CreatePostDTO } from '../validation/post.validator';
 import { validateCreatePost } from '../validation/post.validator';
 
@@ -51,71 +51,85 @@ export const createPost = async (req: Request, res: Response, next: NextFunction
     }
 
     const authorId = req.user.userId;
+
     const createPostDTO: CreatePostDTO = validateResult.data;
     const post = await createPostService({ ...createPostDTO, authorId });
+
+
     return res.status(201).json(post);
   } catch (error) {
     next(error);
   }
 }
 
-export const updatePost = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+export const updatePost = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    if (!req.user) throw new Error('User not authenticated');
 
-    if (!req.user) {
-      throw new Error('User not authenticated');
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    const existingPost = await getPostService(id);
+
+    if (!existingPost) {
+      return res.status(404).json({ message: "Post not found" });
     }
 
-    const authorId = req.user.userId;
+    if (existingPost.authorId !== userId && userRole !== 'admin') {
+      return res.status(403).json({ message: "Access denied" });
+    }
 
     const validateResult = validateCreatePost(req.body);
 
     if (!validateResult.success) {
       return res.status(400).json({
-        success: false,
         message: 'Validation failed',
         errors: validateResult.error.issues.map(issue => issue.message)
       });
     }
 
-    const updatePostDTO: CreatePostDTO = validateResult.data;
-    const updateData = {
+    const updatePostDTO = validateResult.data;
+
+    const updatedPost = await updatePostService(id, {
       ...updatePostDTO,
-      updatedAt: new Date()
-
-    };
-    const post = await updatePostService(id, updateData, authorId);
-
-    if (!post) return res.status(404).json({
-      message: 'Post not found',
+      updatedAt: new Date(),
     });
 
-    return res.status(200).json(post);
+    return res.status(200).json(updatedPost);
+
   } catch (error) {
     next(error);
   }
 };
 
-export const deletePost = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+export const deletePost = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) throw new Error('User not authenticated');
+
     const { id } = req.params;
-    if (!req.user) {
-      throw new Error('User not authenticated');
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    const existingPost = await getPostService(id);
+
+    if (!existingPost) {
+      return res.status(404).json({ message: "Post not found" });
     }
 
-    const authorId = req.user.userId;
-    const post = await deletePostService(id);
+    if (existingPost.authorId !== userId && userRole !== 'admin') {
+      return res.status(403).json({ message: "Access denied" });
+    }
 
-    if (!post) return res.status(404).json({
-      message: 'Post not found'
-    });
+    const deletedPost = await deletePostService(id);
 
     return res.status(200).json({
-      message: 'post deleted successfuly',
-      post
+      message: "Post deleted successfully",
+      post: deletedPost
     });
+
   } catch (error) {
     next(error);
   }
 };
+

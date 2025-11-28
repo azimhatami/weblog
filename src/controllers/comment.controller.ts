@@ -1,6 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { createCommentService, getPostCommentService, updateCommentService, deleteCommentService } from '../services/comment.service';
+import { 
+  createCommentService, 
+  getPostCommentService, 
+  updateCommentService, 
+  deleteCommentService,
+  getCommentByIdService 
+} from '../services/comment.service';
 import type { CreateCommentDTO, UpdateCommentDTO } from '../validation/comment.validator';
 import { validateCreateComment, validateUpdateComment } from '../validation/comment.validator';
 
@@ -54,8 +60,8 @@ export const getPostComments = async (req: Request, res: Response, next: NextFun
 export const updateComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const validateResult = validateUpdateComment(req.body);
     const userId = req.user.userId;
+    const userRole = req.user.role;
 
     const commentId = Number(id);
     if (isNaN(commentId) || commentId <= 0) {
@@ -63,6 +69,22 @@ export const updateComment = async (req: Request, res: Response, next: NextFunct
         message: 'Invalid comment ID'
       });
     }
+
+    const existingComment = await getCommentByIdService(commentId);
+
+    if (!existingComment) {
+      return res.status(404).json({
+        message: 'Comment not found'
+      });
+    }
+
+    if (existingComment.userId  !== userId && userRole !== 'admin') {
+      return res.status(403).json({
+        message: 'Access denied'
+      });
+    }
+
+    const validateResult = validateUpdateComment(req.body);
 
     if (!validateResult.success) {
       return res.status(400).json({
@@ -94,32 +116,38 @@ export const updateComment = async (req: Request, res: Response, next: NextFunct
 
 export const deleteComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
-
     if (!req.user) {
-      throw new Error('User not authenticated');
+      return res.status(401).json({ message: "User not authenticated" });
     }
+
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
 
     const commentId = Number(id);
     if (isNaN(commentId) || commentId <= 0) {
-      return res.status(400).json({
-        message: 'Invalid comment ID'
-      });
+      return res.status(400).json({ message: "Invalid comment ID" });
     }
 
-    const result = await deleteCommentService(commentId);
+    const existingComment = await getCommentByIdService(commentId);
 
-    if (!result) {
-      return res.status(404).json({
-        message: 'Comment not found'
-      });
+    if (!existingComment) {
+      return res.status(404).json({ message: "Comment not found" });
     }
+
+    if (existingComment.userId !== userId && userRole !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const deletedComment = await deleteCommentService(commentId);
 
     return res.status(200).json({
-      message: 'Comment deleted successfuly',
-      result
+      message: "Comment deleted successfully",
+      deletedComment
     });
+
   } catch (error) {
     next(error);
   }
 };
+
